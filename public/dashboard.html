@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — AutoChatbot</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+  <div class="header-inner">
+    <a class="logo" href="/dashboard.html">🤖 AutoChatbot</a>
+    <div class="header-right">
+      <a href="/settings.html" class="btn btn-ghost btn-sm">⚙️ Settings</a>
+      <div class="user-badge">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span class="user-name" id="user-name-display"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</header>
+
+<!-- Page -->
+<main class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Chatbots</h1>
+      <p class="page-subtitle">Build, manage, and embed AI assistants on any website</p>
+    </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">+ New Chatbot</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Total Chatbots</div>
+      <div class="stat-value" id="stat-total">–</div>
+      <div class="stat-sub">across your websites</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Messages</div>
+      <div class="stat-value" id="stat-messages">–</div>
+      <div class="stat-sub">conversations handled</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value" id="stat-status" style="font-size:18px;margin-top:8px">–</div>
+      <div class="stat-sub" id="stat-status-sub">loading…</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">AI Engine</div>
+      <div class="stat-value" id="stat-ai" style="font-size:16px;margin-top:8px">⚪ Echo Mode</div>
+      <div class="stat-sub" id="stat-ai-sub">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="section-header">
+    <h2 class="section-title">Your Chatbots</h2>
+  </div>
+  <div class="chatbot-grid" id="chatbot-grid">
+    <div class="page-loader"><div class="spin"></div> Loading…</div>
+  </div>
+</main>
+
+<!-- ── CREATE / EDIT MODAL ──────────────────── -->
+<div class="modal-overlay" id="modal" onclick="backdropClose(event,'modal')">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Create New Chatbot</h2>
+      <button class="modal-close" onclick="closeModal('modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-error" class="form-error"></div>
+      <div class="form-group">
+        <label class="form-label">Chatbot Icon</label>
+        <div class="icon-picker-label">Choose a preset icon or upload your own image</div>
+        <div class="icon-grid" id="icon-grid"></div>
+        <div class="icon-upload-row">
+          <label class="icon-upload-btn" for="f-icon">
+            📷 Upload image
+            <input type="file" id="f-icon" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none" onchange="onIconChosen(this)" />
+          </label>
+          <div class="icon-preview-wrap" id="f-icon-preview" style="display:none">
+            <img id="f-icon-img" alt="preview" />
+            <button type="button" onclick="clearIconFile()">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Business Name <span class="required">*</span></label>
+        <input id="f-name" class="form-input" type="text" placeholder="e.g. Sunrise Hotel, City Dental…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Website URL <span class="optional">(optional)</span></label>
+        <input id="f-url" class="form-input" type="url" placeholder="https://yourwebsite.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Knowledge Base</label>
+        <textarea id="f-kb" class="form-textarea" placeholder="Describe your business: products, services, opening hours, pricing, FAQs, return policy, contact info…&#10;&#10;The more detail, the smarter your chatbot."></textarea>
+        <div class="form-hint">You can also upload a file — its text will be appended automatically.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Upload File <span class="optional">(PDF, CSV, or TXT — max 10 MB)</span></label>
+        <input type="file" id="f-file" accept=".pdf,.csv,.txt" style="display:none" onchange="onFileChosen(this)" />
+        <div id="f-drop-zone" class="file-drop"
+          onclick="document.getElementById('f-file').click()"
+          ondragover="dragOver(event)" ondrop="dropFile(event)" ondragleave="dragLeave(event)">
+          <div class="file-drop-icon">📂</div>
+          <div class="file-drop-label"><strong>Click to browse</strong> or drag &amp; drop</div>
+          <div class="file-drop-types">Supported: .pdf · .csv · .txt</div>
+        </div>
+        <div id="f-file-info" class="file-selected" style="display:none">
+          <span>📎</span>
+          <span class="file-selected-name" id="f-file-name"></span>
+          <button class="file-clear-btn" onclick="clearFile()">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal')">Cancel</button>
+      <button class="btn btn-primary" id="btn-save" onclick="saveChatbot()">Create Chatbot</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCRIPT MODAL ──────────────────────────── -->
+<div class="modal-overlay" id="script-modal" onclick="backdropClose(event,'script-modal')">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">📋 Embed Script</h2>
+      <button class="modal-close" onclick="closeModal('script-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--muted);margin:0 0 16px">
+        Paste this snippet into your website's HTML just before the <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">&lt;/body&gt;</code> tag.
+      </p>
+      <div class="script-box" id="script-code"></div>
+      <div class="copy-bar">
+        <button class="btn btn-primary btn-sm" onclick="copyScript()">📋 Copy</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadScript()">⬇ Download</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('script-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONVERSATIONS MODAL ───────────────────── -->
+<div class="modal-overlay" id="convo-modal" onclick="backdropClose(event,'convo-modal')">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 class="modal-title" id="convo-title">Chat History</h2>
+      <button class="modal-close" onclick="closeModal('convo-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="convo-body" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑️ Clear History</button>
+      <button class="btn btn-ghost" onclick="closeModal('convo-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM ────────────────────────── -->
+<div class="modal-overlay" id="delete-modal" onclick="backdropClose(event,'delete-modal')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2 class="modal-title">Delete Chatbot?</h2>
+      <button class="modal-close" onclick="closeModal('delete-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:15px;color:var(--muted);margin:0">
+        You're about to delete <strong id="delete-name"></strong>. This removes the chatbot permanently. Any website embedding this script will stop working.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDelete()">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

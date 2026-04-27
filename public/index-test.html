@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoChatbot — AI Chatbots for Any Business</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/landing.css" />
+</head>
+<body class="landing-body">
+
+  <!-- Nav -->
+  <nav class="l-nav">
+    <div class="l-nav-inner">
+      <a class="logo" href="/">🤖 AutoChatbot</a>
+      <div class="l-nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="/login.html" class="btn btn-ghost btn-sm">Sign In</a>
+        <a href="/login.html" class="btn btn-primary btn-sm">Get Started Free</a>
+      </div>
+      <button class="l-nav-toggle" onclick="toggleNav()">☰</button>
+    </div>
+    <div class="l-nav-mobile" id="l-nav-mobile">
+      <a href="#features" onclick="toggleNav()">Features</a>
+      <a href="#how" onclick="toggleNav()">How it works</a>
+      <a href="/login.html">Sign In</a>
+      <a href="/login.html" class="btn btn-primary btn-sm" style="width:100%;justify-content:center">Get Started Free</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="l-hero">
+    <div class="l-hero-content">
+      <div class="l-badge">✨ Powered by GPT-4o mini</div>
+      <h1 class="l-hero-title">Add AI Chat Support to <span class="gradient-text">Any Website</span> in Minutes</h1>
+      <p class="l-hero-sub">Upload your knowledge base — PDFs, CSVs, or plain text. Get one line of code. Your customers get instant, accurate answers 24/7.</p>
+      <div class="l-hero-actions">
+        <a href="/login.html" class="btn btn-primary btn-lg">Start for Free →</a>
+        <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+      </div>
+      <div class="l-hero-proof">
+        <span>🔒 No credit card</span>
+        <span class="proof-dot">·</span>
+        <span>⚡ Live in 5 minutes</span>
+        <span class="proof-dot">·</span>
+        <span>📁 PDF · CSV · TXT</span>
+      </div>
+    </div>
+    <div class="l-hero-visual">
+      <div class="l-browser">
+        <div class="l-browser-bar">
+          <div class="l-browser-dots"><span></span><span></span><span></span></div>
+          <div class="l-browser-url">yourwebsite.com</div>
+        </div>
+        <div class="l-browser-body">
+          <div class="l-page-content">
+            <div class="l-page-line" style="width:55%"></div>
+            <div class="l-page-line" style="width:75%;margin-top:8px"></div>
+            <div class="l-page-line" style="width:45%;margin-top:8px"></div>
+          </div>
+          <div class="l-widget-preview">
+            <div class="l-widget-head">🤖 Support Bot</div>
+            <div class="l-widget-msgs">
+              <div class="l-wmsg bot">Hi! How can I help you today?</div>
+              <div class="l-wmsg user">What are your business hours?</div>
+              <div class="l-wmsg bot">We're open Mon–Fri 9am–6pm. Anything else?</div>
+            </div>
+            <div class="l-widget-input">
+              <div class="l-widget-input-box">Type a message…</div>
+              <div class="l-widget-send">▶</div>
+            </div>
+          </div>
+          <div class="l-chat-bubble">🤖</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logos / social proof -->
+  <div class="l-proof-bar">
+    <span>Works with any website —</span>
+    <strong>WordPress</strong>
+    <strong>Shopify</strong>
+    <strong>Webflow</strong>
+    <strong>Custom HTML</strong>
+    <strong>React</strong>
+    <strong>Vue</strong>
+  </div>
+
+  <!-- Features -->
+  <section class="l-section" id="features">
+    <div class="l-section-inner">
+      <div class="l-section-label">Features</div>
+      <h2 class="l-section-title">Everything you need to deploy AI support</h2>
+      <div class="l-features-grid">
+        <div class="l-feature-card">
+          <div class="l-feature-icon">⚡</div>
+          <h3>Instant Setup</h3>
+          <p>Create a chatbot in 60 seconds. Enter your business name, add knowledge, get a script tag to embed anywhere.</p>
+        </div>
+        <div class="l-feature-card">
+          <div class="l-feature-icon">🧠</div>
+          <h3>Smart Knowledge Base</h3>
+          <p>Upload PDFs, CSVs, or text files. Your chatbot learns from your documents and gives accurate, grounded answers.</p>
+        </div>
+        <div class="l-feature-card">
+          <div class="l-feature-icon">🎨</div>
+          <h3>Beautiful Widget</h3>
+          <p>A polished floating chat bubble that blends into any website. Zero design work required.</p>
+        </div>
+        <div class="l-feature-card">
+          <div class="l-feature-icon">💬</div>
+          <h3>Chat History</h3>
+          <p>Every conversation is saved. Review what your customers are asking and improve your knowledge base over time.</p>
+        </div>
+        <div class="l-feature-card">
+          <div class="l-feature-icon">🤖</div>
+          <h3>GPT-4o Powered</h3>
+          <p>Connect your OpenAI key for state-of-the-art AI responses. Works without it too — smart fallback included.</p>
+        </div>
+        <div class="l-feature-card">
+          <div class="l-feature-icon">📊</div>
+          <h3>Multi-Site Dashboard</h3>
+          <p>Manage unlimited chatbots for different websites from one clean dashboard. Edit, update, or delete anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="l-section l-how" id="how">
+    <div class="l-section-inner">
+      <div class="l-section-label">How it works</div>
+      <h2 class="l-section-title">Three steps to live AI support</h2>
+      <div class="l-steps">
+        <div class="l-step">
+          <div class="l-step-num">1</div>
+          <h3>Create your chatbot</h3>
+          <p>Enter your business name and paste your knowledge — or upload a PDF, CSV, or TXT file with your info, FAQs, and policies.</p>
+        </div>
+        <div class="l-step-arrow">→</div>
+        <div class="l-step">
+          <div class="l-step-num">2</div>
+          <h3>Copy the script</h3>
+          <p>Click "Get Script" on your dashboard. Copy the one-line HTML snippet generated specifically for your chatbot.</p>
+        </div>
+        <div class="l-step-arrow">→</div>
+        <div class="l-step">
+          <div class="l-step-num">3</div>
+          <h3>Paste &amp; go live</h3>
+          <p>Drop the script before your site's <code>&lt;/body&gt;</code> tag. The floating chat widget appears immediately — no build step needed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="l-cta">
+    <div class="l-section-inner" style="text-align:center">
+      <h2 class="l-cta-title">Your customers are waiting for answers</h2>
+      <p class="l-cta-sub">Set up your AI chatbot in minutes. No technical skills, no credit card.</p>
+      <a href="/login.html" class="btn btn-primary btn-lg">Create Your Free Chatbot →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="l-footer">
+    <div class="l-footer-inner">
+      <div class="l-footer-brand">
+        <span>🤖</span>
+        <strong>AutoChatbot</strong>
+        <span class="l-footer-tagline">AI chatbots for any business</span>
+      </div>
+      <div class="l-footer-links">
+        <a href="/login.html">Sign In</a>
+        <a href="/login.html">Get Started</a>
+        <a href="#features">Features</a>
+      </div>
+      <div class="l-footer-copy">© 2026 AutoChatbot. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav() {
+      document.getElementById('l-nav-mobile').classList.toggle('open');
+    }
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const el = document.querySelector(a.getAttribute('href'));
+        if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+  </script>
+</body>
+</html>
