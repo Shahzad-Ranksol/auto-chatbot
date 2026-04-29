@@ -1,14 +1,22 @@
 (function () {
-  const script = document.currentScript || (function () {
-    const scripts = document.getElementsByTagName('script');
-    return scripts[scripts.length - 1];
-  })();
+  // Queue-based loader (bundling-proof) takes priority over script tag data-id
+  const q = window._cbQ && window._cbQ.length ? window._cbQ.shift() : null;
+  let chatbotId, BASE_URL;
 
-  const chatbotId = script.getAttribute('data-id');
+  if (q) {
+    chatbotId = q.id;
+    BASE_URL = q.base;
+  } else {
+    const script = document.currentScript || (function () {
+      const scripts = document.getElementsByTagName('script');
+      return scripts[scripts.length - 1];
+    })();
+    chatbotId = script.getAttribute('data-id');
+    const src = script.src;
+    BASE_URL = src.substring(0, src.lastIndexOf('/'));
+  }
+
   if (!chatbotId) return;
-
-  const src = script.src;
-  const BASE_URL = src.substring(0, src.lastIndexOf('/'));
 
   const style = document.createElement('style');
   style.textContent = `
@@ -192,7 +200,8 @@
 
   function applyIcon(icon) {
     botIcon = icon || '💬';
-    const isUrl = botIcon.startsWith('/') || botIcon.startsWith('http');
+    if (botIcon.startsWith('/')) botIcon = BASE_URL + botIcon;
+    const isUrl = botIcon.startsWith('http');
     const imgTag = `<img src="${botIcon}" alt="" />`;
     avatarEl.innerHTML = isUrl ? imgTag : botIcon;
     if (!open) btn.innerHTML = isUrl ? imgTag : botIcon;

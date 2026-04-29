@@ -1,6 +1,7 @@
 'use strict';
 
-if (localStorage.getItem('token')) window.location.replace('/dashboard.html');
+const BASE = '/auto-chatbot';
+if (localStorage.getItem('token')) window.location.replace(BASE + '/dashboard.html');
 
 function togglePw(inputId, btn) {
   const input = document.getElementById(inputId);
@@ -22,7 +23,7 @@ async function login() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>&nbsp; Signing in…';
   try {
-    const res  = await fetch('/auth/login', {
+    const res  = await fetch(BASE + '/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -31,7 +32,7 @@ async function login() {
     if (!res.ok) throw new Error(data.error);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    window.location.replace('/dashboard.html');
+    window.location.replace(BASE + '/dashboard.html');
   } catch (err) {
     errEl.textContent = err.message || 'Login failed. Please try again.';
     errEl.style.display = 'block';

@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings — AutoChatbot</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <base href="/auto-chatbot/" />
+  <link rel="stylesheet" href="css/style.css" />
   <style>
     /* ── Profile Hero ── */
     .profile-hero {
@@ -178,7 +179,7 @@
 
 <header class="app-header">
   <div class="header-inner">
-    <a class="logo" href="/dashboard.html">🤖 AutoChatbot</a>
+    <a class="logo" href="dashboard.html">🤖 AutoChatbot</a>
     <div class="header-right">
       <div class="user-badge">
         <div class="user-avatar" id="user-avatar">?</div>
@@ -196,7 +197,7 @@
       <h1 class="page-title">Account Settings</h1>
       <p class="page-subtitle">Manage your AI engine, profile &amp; security</p>
     </div>
-    <a href="/dashboard.html" class="btn btn-ghost">← Dashboard</a>
+    <a href="dashboard.html" class="btn btn-ghost">← Dashboard</a>
   </div>
 
   <!-- Profile Hero -->
@@ -448,8 +449,9 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script>
+const BASE = '/auto-chatbot';
 const token = localStorage.getItem('token');
-if (!token) window.location.replace('/login.html');
+if (!token) window.location.replace(BASE + '/login.html');
 
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 document.getElementById('user-name-display').textContent = user.name || user.email || '';
@@ -458,7 +460,7 @@ document.getElementById('user-avatar').textContent = (user.name || user.email ||
 let selectedProvider = 'none';
 let keyVisible = false;
 
-function logout() { localStorage.clear(); window.location.replace('/login.html'); }
+function logout() { localStorage.clear(); window.location.replace(BASE + '/login.html'); }
 
 function showTab(id) {
   document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
@@ -535,7 +537,7 @@ async function saveAI() {
   }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Saving…';
   try {
-    const res  = await fetch('/api/settings/ai', {
+    const res  = await fetch(BASE + '/api/settings/ai', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ provider: selectedProvider, key: key || '' })
@@ -568,7 +570,7 @@ async function changeEmail() {
   }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Updating…';
   try {
-    const res  = await fetch('/api/settings/email', {
+    const res  = await fetch(BASE + '/api/settings/email', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ email, currentPassword: password })
@@ -590,7 +592,7 @@ async function changeEmail() {
 
 async function loadProfile() {
   try {
-    const res  = await fetch('/api/settings', { headers: { Authorization: `Bearer ${token}` } });
+    const res  = await fetch(BASE + '/api/settings', { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     document.getElementById('s-name').value   = data.name || '';
     document.getElementById('s-email').value  = data.email || '';
@@ -620,7 +622,7 @@ async function saveProfile() {
   }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Saving…';
   try {
-    const res  = await fetch('/api/settings/profile', {
+    const res  = await fetch(BASE + '/api/settings/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name })
@@ -659,7 +661,7 @@ async function changePassword() {
   }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Updating…';
   try {
-    const res  = await fetch('/api/settings/password', {
+    const res  = await fetch(BASE + '/api/settings/password', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ currentPassword: current, newPassword: next })
@@ -699,7 +701,7 @@ async function adminCreateUser() {
   }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Creating…';
   try {
-    const res  = await fetch('/api/admin/users', {
+    const res  = await fetch(BASE + '/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name, email, password })
@@ -721,7 +723,7 @@ async function loadAdminUsers() {
   const el = document.getElementById('admin-users-list');
   el.innerHTML = '<div class="page-loader"><div class="spin"></div> Loading…</div>';
   try {
-    const res  = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
+    const res  = await fetch(BASE + '/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     renderAdminUsers(data);
@@ -778,7 +780,7 @@ function renderAdminUsers(users) {
 async function adminDeleteUser(id, email) {
   if (!confirm(`Delete user "${email}"? All their chatbots and messages will be lost.`)) return;
   try {
-    const res  = await fetch(`/api/admin/users/${id}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } });
+    const res  = await fetch(`${BASE}/api/admin/users/${id}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     toast('User deleted.', 'success');

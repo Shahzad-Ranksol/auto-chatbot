@@ -1,7 +1,8 @@
 'use strict';
 
+const BASE = '/auto-chatbot';
 const token = localStorage.getItem('token');
-if (!token) window.location.replace('/login.html');
+if (!token) window.location.replace(BASE + '/login.html');
 
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 document.getElementById('user-name-display').textContent = user.name || user.email || '';
@@ -54,12 +55,12 @@ document.addEventListener('keydown', e => {
 });
 
 // ── AUTH ───────────────────────────────────────
-function logout() { localStorage.clear(); window.location.replace('/login.html'); }
+function logout() { localStorage.clear(); window.location.replace(BASE + '/login.html'); }
 
 // ── LOAD ───────────────────────────────────────
 async function loadChatbots() {
   try {
-    allBots = await authFetch('GET', '/api/chatbots');
+    allBots = await authFetch('GET', BASE + '/api/chatbots');
     renderGrid();
     updateStats();
   } catch (err) {
@@ -209,7 +210,7 @@ function openCreateModal() {
 // ── EDIT ───────────────────────────────────────
 async function openEditModal(id) {
   try {
-    const bot = await authFetch('GET', `/api/chatbots/${id}`);
+    const bot = await authFetch('GET', `${BASE}/api/chatbots/${id}`);
     editingId = id;
     document.getElementById('modal-title').textContent = 'Edit Chatbot';
     document.getElementById('btn-save').textContent = 'Save Changes';
@@ -254,7 +255,7 @@ async function saveChatbot() {
       form.append('icon', selectedIcon || '💬');
     }
 
-    const res = await fetch(editingId ? `/api/chatbots/${editingId}` : '/api/chatbots', {
+    const res = await fetch(editingId ? `${BASE}/api/chatbots/${editingId}` : BASE + '/api/chatbots', {
       method: editingId ? 'PUT' : 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: form
@@ -287,7 +288,7 @@ async function confirmDelete() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>&nbsp; Deleting…';
   try {
-    await authFetch('DELETE', `/api/chatbots/${deleteTargetId}`);
+    await authFetch('DELETE', `${BASE}/api/chatbots/${deleteTargetId}`);
     closeModal('delete-modal');
     await loadChatbots();
     toast('Chatbot deleted.', 'success');
@@ -301,11 +302,11 @@ async function confirmDelete() {
 
 // ── SCRIPT ─────────────────────────────────────
 let _baseUrl = window.location.origin;
-fetch('/api/config').then(r => r.json()).then(cfg => { _baseUrl = cfg.baseUrl; }).catch(() => {});
+fetch(BASE + '/api/config').then(r => r.json()).then(cfg => { _baseUrl = cfg.baseUrl; }).catch(() => {});
 
 function showScript(id, name) {
   scriptTargetId = id;
-  const code = `<!-- ${name} Chatbot Widget -->\n<script src="${_baseUrl}/chatbot.js" data-id="${id}"><\/script>`;
+  const code = `<!-- ${name} Chatbot Widget -->\n<script>(function(){var b='${_baseUrl}';window._cbQ=window._cbQ||[];window._cbQ.push({id:'${id}',base:b});if(!window._cbS){window._cbS=1;var s=document.createElement('script');s.src=b+'/chatbot.js';document.head.appendChild(s);}})();<\/script>`;
   document.getElementById('script-code').textContent = code;
   openModal('script-modal');
 }
@@ -323,7 +324,7 @@ async function copyScript() {
 async function downloadScript() {
   if (!scriptTargetId) return;
   try {
-    const res = await fetch(`/api/chatbots/${scriptTargetId}/script`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${BASE}/api/chatbots/${scriptTargetId}/script`, { headers: { Authorization: `Bearer ${token}` } });
     const blob = await res.blob();
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -341,7 +342,7 @@ async function openConvos(id, name) {
   document.getElementById('convo-body').innerHTML = `<div class="page-loader"><div class="spin"></div> Loading…</div>`;
   openModal('convo-modal');
   try {
-    const msgs = await authFetch('GET', `/api/chatbots/${id}/messages`);
+    const msgs = await authFetch('GET', `${BASE}/api/chatbots/${id}/messages`);
     renderConvos(msgs);
   } catch (err) {
     document.getElementById('convo-body').innerHTML = `<p style="color:var(--danger)">${err.message}</p>`;
@@ -375,7 +376,7 @@ function renderConvos(msgs) {
 async function clearHistory() {
   if (!confirm('Clear all chat history for this chatbot? This cannot be undone.')) return;
   try {
-    await authFetch('DELETE', `/api/chatbots/${convoTargetId}/messages`);
+    await authFetch('DELETE', `${BASE}/api/chatbots/${convoTargetId}/messages`);
     document.getElementById('convo-body').innerHTML = `
       <div style="text-align:center;padding:40px;color:var(--muted)">
         <div style="font-size:32px;margin-bottom:12px">✅</div>
@@ -416,13 +417,13 @@ function dropFile(e) {
 
 // ── TEST WIDGET ────────────────────────────────
 function testWidget(id) {
-  window.open(`/widget-test/${id}`, '_blank');
+  window.open(`${BASE}/widget-test/${id}`, '_blank');
 }
 
 // ── AI STATUS ──────────────────────────────────
 async function loadAIStatus() {
   try {
-    const data = await authFetch('GET', '/api/settings');
+    const data = await authFetch('GET', BASE + '/api/settings');
     const el  = document.getElementById('stat-ai');
     const sub = document.getElementById('stat-ai-sub');
     if (data.ai_provider === 'openai' && data.has_ai_key) {
@@ -433,7 +434,7 @@ async function loadAIStatus() {
       sub.textContent = '2.0 Flash · active';
     } else {
       el.textContent  = '⚪ Echo Mode';
-      sub.innerHTML   = '<a href="/settings.html" style="color:var(--primary)">Configure in Settings →</a>';
+      sub.innerHTML   = `<a href="${BASE}/settings.html" style="color:var(--primary)">Configure in Settings →</a>`;
     }
   } catch {}
 }

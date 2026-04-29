@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 const auth = require('../middleware/auth');
 const db = require('../db');
 const { parseFile } = require('../services/fileParser');
@@ -120,7 +120,7 @@ router.post('/', auth, uploadFields, async (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     res.status(201).json({
       id, name, websiteUrl, icon,
-      script: `<script src="${baseUrl}/chatbot.js" data-id="${id}"></script>`
+      script: `<script data-cfasync="false" defer src="${baseUrl}/chatbot.js" data-id="${id}"></script>`
     });
   } catch (err) {
     console.error(err);
@@ -247,9 +247,9 @@ router.get('/:id/script', auth, async (req, res) => {
     <p>Your chatbot is live and ready. Click the chat button in the <strong>bottom-right corner</strong> to start a conversation.</p>
     <p>Copy the snippet below into any webpage to embed this chatbot.</p>
     <div class="arrow">👇 Chat button — bottom right</div>
-    <code>&lt;script src="${baseUrl}/chatbot.js" data-id="${id}"&gt;&lt;/script&gt;</code>
+    <code>&lt;script data-cfasync="false" defer src="${baseUrl}/chatbot.js" data-id="${id}"&gt;&lt;/script&gt;</code>
   </div>
-  <script src="${baseUrl}/chatbot.js" data-id="${id}"></script>
+  <script data-cfasync="false" defer src="${baseUrl}/chatbot.js" data-id="${id}"></script>
 </body>
 </html>`;
     res.setHeader('Content-Disposition', `attachment; filename="${name.replace(/\s+/g, '-').toLowerCase()}-chatbot.html"`);

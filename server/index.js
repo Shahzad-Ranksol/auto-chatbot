@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../.env'), override: true });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,10 +12,19 @@ if (!fs.existsSync(iconDir)) fs.mkdirSync(iconDir, { recursive: true });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.set('trust proxy', 1);
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(express.json());
+
+// Strip /auto-chatbot prefix added by cPanel's reverse proxy
+app.use((req, res, next) => {
+  if (req.url.startsWith('/auto-chatbot')) {
+    req.url = req.url.slice('/auto-chatbot'.length) || '/';
+  }
+  next();
+});
 
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many attempts, please try again later.' } });
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: { error: 'Too many messages, slow down.' } });
@@ -30,14 +39,14 @@ app.use(express.static(path.join(__dirname, '../public'), { extensions: ['html']
 
 // Returns the configured public base URL — used by the dashboard to build embed scripts
 app.get('/api/config', (req, res) => {
-  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/auto-chatbot`;
   res.json({ baseUrl });
 });
 
 // Live preview page for testing a chatbot widget
 app.get('/widget-test/:id', (req, res) => {
   const id = req.params.id;
-  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/auto-chatbot`;
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,7 +71,7 @@ app.get('/widget-test/:id', (req, res) => {
 <body>
   <div class="bar">
     🤖 AutoChatbot — Widget Test
-    <a href="/dashboard.html">← Back to Dashboard</a>
+    <a href="/auto-chatbot/dashboard.html">← Back to Dashboard</a>
   </div>
   <div class="content">
     <div class="card">
@@ -73,7 +82,7 @@ app.get('/widget-test/:id', (req, res) => {
       <p>Chatbot ID: <code>${id}</code></p>
     </div>
   </div>
-  <script src="${baseUrl}/chatbot.js" data-id="${id}"></script>
+  <script data-cfasync="false" defer src="${baseUrl}/chatbot.js" data-id="${id}"></script>
 </body>
 </html>`);
 });
