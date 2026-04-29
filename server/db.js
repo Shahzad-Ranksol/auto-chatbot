@@ -1,37 +1,13 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+const mysql = require('mysql2/promise');
 
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'autochatbot',
+  waitForConnections: true,
+  connectionLimit: 10,
+  charset: 'utf8mb4'
+});
 
-const sqlite = new Database(path.join(dataDir, 'autochatbot.db'));
-sqlite.pragma('journal_mode = WAL');
-sqlite.pragma('foreign_keys = ON');
-
-function execute(sql, params = []) {
-  try {
-    const stmt = sqlite.prepare(sql);
-    const upper = sql.trimStart().toUpperCase();
-    if (upper.startsWith('SELECT') || upper.startsWith('PRAGMA')) {
-      return Promise.resolve([stmt.all(...params)]);
-    }
-    const result = stmt.run(...params);
-    return Promise.resolve([{ affectedRows: result.changes, insertId: result.lastInsertRowid }]);
-  } catch (err) {
-    return Promise.reject(err);
-  }
-}
-
-function getConnection() {
-  return Promise.resolve({
-    query: (sql, params = []) => execute(sql, params),
-    release: () => {}
-  });
-}
-
-function executeSync(sql) {
-  sqlite.prepare(sql).run();
-}
-
-module.exports = { execute, getConnection, executeSync };
+module.exports = pool;

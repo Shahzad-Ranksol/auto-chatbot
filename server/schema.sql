@@ -1,32 +1,35 @@
+CREATE DATABASE IF NOT EXISTS autochatbot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE autochatbot;
+
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT DEFAULT '',
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  ai_provider TEXT DEFAULT 'none',
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) DEFAULT '',
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  ai_provider VARCHAR(20) DEFAULT 'none',
   ai_key TEXT DEFAULT NULL,
-  is_admin INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT DEFAULT (datetime('now'))
+  is_admin TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS chatbots (
-  id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
-  name TEXT NOT NULL,
-  website_url TEXT DEFAULT NULL,
-  knowledge_base TEXT DEFAULT NULL,
-  icon TEXT NOT NULL DEFAULT '💬',
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now')),
+  id VARCHAR(36) PRIMARY KEY,
+  user_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  website_url VARCHAR(500) DEFAULT NULL,
+  knowledge_base LONGTEXT DEFAULT NULL,
+  icon VARCHAR(255) NOT NULL DEFAULT '💬',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS messages (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  chatbot_id TEXT NOT NULL,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  chatbot_id VARCHAR(36) NOT NULL,
   user_message TEXT NOT NULL,
   bot_reply TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (chatbot_id) REFERENCES chatbots(id) ON DELETE CASCADE
 );
 

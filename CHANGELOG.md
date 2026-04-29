@@ -2,21 +2,6 @@
 
 All notable changes to AutoChatbot are documented here.
 
-## [2.1.0] — 2026-04-29
-
-### Changed
-- **Replaced MySQL with SQLite** — no database server, phpMyAdmin, or DB credentials required
-- Database file auto-created at `data/autochatbot.db` on first startup
-- Removed `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` from `.env.example`
-- Simplified Docker Compose: single container, no MySQL service or healthcheck
-- Simplified installer: `createTables()` is now synchronous, no connection pool needed
-- Updated `INSTALLATION.md`: removed all MySQL/phpMyAdmin setup steps
-
-### Removed
-- `mysql2` dependency (replaced by `better-sqlite3`)
-
----
-
 ## [2.0.0] — 2026-04-28
 
 ### Added

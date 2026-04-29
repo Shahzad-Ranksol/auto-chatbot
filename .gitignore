@@ -5,4 +5,3 @@ public/uploads/icons/
 *.log
 .DS_Store
 installed.lock
-data/
