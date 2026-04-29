@@ -97,7 +97,7 @@ app.get('/widget-test/:id', (req, res) => {
 <body>
   <div class="bar">
     🤖 AutoChatbot — Widget Test
-    <a href="/auto-chatbot/dashboard.html">← Back to Dashboard</a>
+    <a href="${baseUrl}/dashboard.html">← Back to Dashboard</a>
   </div>
   <div class="content">
     <div class="card">
