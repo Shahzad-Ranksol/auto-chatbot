@@ -116,8 +116,16 @@ function dbErrorPage(err) {
     body: `
       <div class="done-icon">⚠️</div>
       <h1>Database Connection Error</h1>
-      <p class="sub">Could not connect to the database. Please check your <code>.env</code> configuration and try again.</p>
-      <p style="font-size:12px;color:#94a3b8;margin-top:16px;word-break:break-all">${err}</p>`
+      <p class="sub">Could not connect to the database. Check your <code>.env</code> credentials and try again.</p>
+      <p style="font-size:12px;color:#94a3b8;margin-top:8px;word-break:break-all">${err}</p>
+      <div style="margin-top:24px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:left">
+        <p style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px">Required <code>.env</code> variables:</p>
+        <pre style="font-size:12px;color:#475569;margin:0;line-height:1.8">DB_HOST=localhost
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=your_db_name</pre>
+        <p style="font-size:12px;color:#64748b;margin-top:10px">On cPanel, database and username are prefixed with your account name, e.g. <code>myaccount_autochatbot</code>. See <strong>DATABASE_SETUP.md</strong> for full instructions.</p>
+      </div>`
   });
 }
 
