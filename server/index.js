@@ -17,19 +17,14 @@ process.on('uncaughtException', (err) => { log('UNCAUGHT EXCEPTION: ' + err.stac
 process.on('unhandledRejection', (reason) => { log('UNHANDLED REJECTION: ' + reason); });
 
 // ── DB auto-init ───────────────────────────────────────────────────────────────
-async function initDB() {
+function initDB() {
+  const { executeSync } = require('./db');
   const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-  const statements = sql
-    .split(';')
+  sql.split(';')
     .map(s => s.trim())
-    // Skip CREATE DATABASE and USE — buyer creates the DB manually on shared hosting
-    .filter(s => s.length > 0 && !s.startsWith('--') && !s.toUpperCase().startsWith('CREATE DATABASE') && !s.toUpperCase().startsWith('USE '));
-  const conn = await require('./db').getConnection();
-  try {
-    for (const stmt of statements) await conn.query(stmt);
-  } finally {
-    conn.release();
-  }
+    .filter(s => s.length > 0 && !s.startsWith('--'))
+    .forEach(stmt => { try { executeSync(stmt); } catch (_) {} });
+  log('DB initialized');
 }
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
@@ -127,14 +122,7 @@ app.use('/api/admin',    apiLimiter, require('./routes/admin'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', version: '2.0.0' }));
 
-initDB()
-  .then(() => {
-    app.listen(PORT, () => log(`Server running on http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    log('DB init failed: ' + err.message);
-    // Start anyway — DB may already be initialised
-    app.listen(PORT, () => log(`Server running on http://localhost:${PORT} (DB init skipped)`));
-  });
+initDB();
+app.listen(PORT, () => log(`Server running on http://localhost:${PORT}`));
 
 module.exports = app;

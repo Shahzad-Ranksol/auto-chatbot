@@ -174,7 +174,7 @@ router.put('/:id', auth, uploadFields, async (req, res) => {
       : (req.body.icon !== undefined ? req.body.icon : (existing.icon || '💬'));
 
     await db.execute(
-      'UPDATE chatbots SET name = ?, website_url = ?, knowledge_base = ?, icon = ? WHERE id = ?',
+      "UPDATE chatbots SET name = ?, website_url = ?, knowledge_base = ?, icon = ?, updated_at = datetime('now') WHERE id = ?",
       [name, websiteUrl || null, kb || null, icon, req.params.id]
     );
     res.json({ success: true });

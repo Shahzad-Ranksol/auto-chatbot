@@ -3,3 +3,4 @@ uploads
 .env
 *.md
 installed.lock
+data/
