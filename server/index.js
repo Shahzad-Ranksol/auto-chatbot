@@ -22,7 +22,8 @@ async function initDB() {
   const statements = sql
     .split(';')
     .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Skip CREATE DATABASE and USE — buyer creates the DB manually on shared hosting
+    .filter(s => s.length > 0 && !s.startsWith('--') && !s.toUpperCase().startsWith('CREATE DATABASE') && !s.toUpperCase().startsWith('USE '));
   const conn = await require('./db').getConnection();
   try {
     for (const stmt of statements) await conn.query(stmt);

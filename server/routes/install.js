@@ -6,6 +6,21 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 
 const LOCK_FILE = path.join(__dirname, '../../installed.lock');
+const SCHEMA = path.join(__dirname, '../schema.sql');
+
+async function createTables() {
+  const sql = fs.readFileSync(SCHEMA, 'utf8');
+  const statements = sql
+    .split(';')
+    .map(s => s.trim())
+    .filter(s => s.length > 0 && !s.startsWith('--') && !s.toUpperCase().startsWith('CREATE DATABASE') && !s.toUpperCase().startsWith('USE '));
+  const conn = await db.getConnection();
+  try {
+    for (const stmt of statements) await conn.query(stmt);
+  } finally {
+    conn.release();
+  }
+}
 
 const PAGE = (opts) => `<!DOCTYPE html>
 <html lang="en">
@@ -142,6 +157,9 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    // Create tables if they don't exist yet (buyer only needs an empty DB)
+    await createTables();
+
     const hash = await bcrypt.hash(password, 10);
     await db.execute(
       'INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 1)',
@@ -156,6 +174,9 @@ router.post('/', async (req, res) => {
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'An account with that email already exists' });
+    }
+    if (err.code === 'ER_ACCESS_DENIED_ERROR' || err.code === 'ECONNREFUSED' || err.code === 'ER_BAD_DB_ERROR') {
+      return res.status(500).json({ error: 'Database connection failed. Check your .env DB credentials and ensure the database exists.' });
     }
     res.status(500).json({ error: 'Setup failed: ' + err.message });
   }
