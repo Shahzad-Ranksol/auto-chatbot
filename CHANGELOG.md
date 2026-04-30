@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to AutoChatbot are documented here.
+All notable changes to ChatBot Pro are documented here.
 
 ## [2.0.0] — 2026-04-28
 
@@ -18,5 +18,5 @@ All notable changes to AutoChatbot are documented here.
 - Automatic database schema initialization on server startup
 - Docker Compose setup with MySQL 8 healthcheck and named volumes
 - File-based server logging with timestamps (`server.log`)
-- cPanel reverse proxy support (automatic `/auto-chatbot` prefix stripping)
+- cPanel reverse proxy support (automatic `/chatbot-pro` prefix stripping)
 - `Cross-Origin-Resource-Policy: cross-origin` header for widget embedding on external sites

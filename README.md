@@ -1,6 +1,6 @@
-# 🤖 AutoChatbot
+# 🤖 ChatBot Pro
 
-**AutoChatbot** is a self-hosted, multi-tenant chatbot SaaS platform. Create AI-powered chatbots trained on your own content and embed them on any website with a single `<script>` tag.
+**ChatBot Pro** is a self-hosted, multi-tenant chatbot SaaS platform. Create AI-powered chatbots trained on your own content and embed them on any website with a single `<script>` tag.
 
 ![Node.js](https://img.shields.io/badge/Node.js-≥18-339933?logo=node.js&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
@@ -36,8 +36,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/autochatbot.git
-cd autochatbot
+git clone https://github.com/your-username/chatbot_pro.git
+cd chatbot_pro
 
 # 2. Install dependencies
 npm install

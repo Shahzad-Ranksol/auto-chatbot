@@ -45,44 +45,30 @@ const uploadFields = upload.fields([
   { name: 'iconFile', maxCount: 1 }
 ]);
 
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, (req, res) => {
   try {
-    const [rows] = await db.execute(
-      `SELECT c.id, c.name, c.website_url, c.icon, c.created_at, c.updated_at,
-        COUNT(m.id) AS message_count
-       FROM chatbots c
-       LEFT JOIN messages m ON m.chatbot_id = c.id
-       WHERE c.user_id = ?
-       GROUP BY c.id
-       ORDER BY c.created_at DESC`,
-      [req.user.id]
-    );
-    res.json(rows);
+    res.json(db.chatbots.findByUser(req.user.id));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch chatbots' });
   }
 });
 
-router.get('/:id/messages', auth, async (req, res) => {
+router.get('/:id/messages', auth, (req, res) => {
   try {
-    const [bots] = await db.execute('SELECT id FROM chatbots WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    if (!bots.length) return res.status(404).json({ error: 'Chatbot not found' });
-    const [rows] = await db.execute(
-      'SELECT id, user_message, bot_reply, created_at FROM messages WHERE chatbot_id = ? ORDER BY created_at DESC LIMIT 100',
-      [req.params.id]
-    );
-    res.json(rows);
+    const chatbot = db.chatbots.findByIdAndUser(req.params.id, req.user.id);
+    if (!chatbot) return res.status(404).json({ error: 'Chatbot not found' });
+    res.json(db.messages.findByChatbot(req.params.id));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
 
-router.delete('/:id/messages', auth, async (req, res) => {
+router.delete('/:id/messages', auth, (req, res) => {
   try {
-    const [bots] = await db.execute('SELECT id FROM chatbots WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    if (!bots.length) return res.status(404).json({ error: 'Chatbot not found' });
-    await db.execute('DELETE FROM messages WHERE chatbot_id = ?', [req.params.id]);
+    const chatbot = db.chatbots.findByIdAndUser(req.params.id, req.user.id);
+    if (!chatbot) return res.status(404).json({ error: 'Chatbot not found' });
+    db.messages.deleteByChatbot(req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to clear history' });
@@ -113,10 +99,7 @@ router.post('/', auth, uploadFields, async (req, res) => {
 
   try {
     const id = uuidv4();
-    await db.execute(
-      'INSERT INTO chatbots (id, user_id, name, website_url, knowledge_base, icon) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, req.user.id, name, websiteUrl || null, kb || null, icon]
-    );
+    db.chatbots.create({ id, user_id: req.user.id, name, website_url: websiteUrl || null, knowledge_base: kb || null, icon });
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     res.status(201).json({
       id, name, websiteUrl, icon,
@@ -128,14 +111,11 @@ router.post('/', auth, uploadFields, async (req, res) => {
   }
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, (req, res) => {
   try {
-    const [rows] = await db.execute(
-      'SELECT * FROM chatbots WHERE id = ? AND user_id = ?',
-      [req.params.id, req.user.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Chatbot not found' });
-    res.json(rows[0]);
+    const chatbot = db.chatbots.findByIdAndUser(req.params.id, req.user.id);
+    if (!chatbot) return res.status(404).json({ error: 'Chatbot not found' });
+    res.json(chatbot);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch chatbot' });
   }
@@ -143,13 +123,9 @@ router.get('/:id', auth, async (req, res) => {
 
 router.put('/:id', auth, uploadFields, async (req, res) => {
   try {
-    const [rows] = await db.execute(
-      'SELECT * FROM chatbots WHERE id = ? AND user_id = ?',
-      [req.params.id, req.user.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Chatbot not found' });
+    const existing = db.chatbots.findByIdAndUser(req.params.id, req.user.id);
+    if (!existing) return res.status(404).json({ error: 'Chatbot not found' });
 
-    const existing = rows[0];
     const name       = req.body.name || existing.name;
     const websiteUrl = req.body.websiteUrl !== undefined ? req.body.websiteUrl : existing.website_url;
     let   kb         = req.body.knowledgeBase !== undefined ? req.body.knowledgeBase : (existing.knowledge_base || '');
@@ -173,10 +149,7 @@ router.put('/:id', auth, uploadFields, async (req, res) => {
       ? `/uploads/icons/${iconFile.filename}`
       : (req.body.icon !== undefined ? req.body.icon : (existing.icon || '💬'));
 
-    await db.execute(
-      'UPDATE chatbots SET name = ?, website_url = ?, knowledge_base = ?, icon = ? WHERE id = ?',
-      [name, websiteUrl || null, kb || null, icon, req.params.id]
-    );
+    db.chatbots.update(req.params.id, { name, website_url: websiteUrl || null, knowledge_base: kb || null, icon });
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -184,28 +157,22 @@ router.put('/:id', auth, uploadFields, async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, (req, res) => {
   try {
-    const [result] = await db.execute(
-      'DELETE FROM chatbots WHERE id = ? AND user_id = ?',
-      [req.params.id, req.user.id]
-    );
-    if (!result.affectedRows) return res.status(404).json({ error: 'Chatbot not found' });
+    const deleted = db.chatbots.delete(req.params.id, req.user.id);
+    if (!deleted) return res.status(404).json({ error: 'Chatbot not found' });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete chatbot' });
   }
 });
 
-router.get('/:id/script', auth, async (req, res) => {
+router.get('/:id/script', auth, (req, res) => {
   try {
-    const [rows] = await db.execute(
-      'SELECT id, name FROM chatbots WHERE id = ? AND user_id = ?',
-      [req.params.id, req.user.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Chatbot not found' });
+    const chatbot = db.chatbots.findByIdAndUser(req.params.id, req.user.id);
+    if (!chatbot) return res.status(404).json({ error: 'Chatbot not found' });
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const { id, name } = rows[0];
+    const { id, name } = chatbot;
     const content = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,30 +181,13 @@ router.get('/:id/script', auth, async (req, res) => {
   <title>${name} — Chatbot Demo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f1f5f9; min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .card {
-      background: #fff; border-radius: 16px; padding: 48px 40px;
-      text-align: center; max-width: 480px; width: 90%;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: #fff; border-radius: 16px; padding: 48px 40px; text-align: center; max-width: 480px; width: 90%; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
     .icon { font-size: 48px; margin-bottom: 16px; }
     h1 { font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
     p { font-size: 15px; color: #64748b; line-height: 1.6; margin-bottom: 8px; }
-    .arrow {
-      margin-top: 24px; display: inline-flex; align-items: center; gap: 8px;
-      background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;
-      padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 600;
-    }
-    code {
-      display: block; margin-top: 28px; background: #f8fafc;
-      border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 14px 16px; font-size: 12px; color: #475569;
-      text-align: left; word-break: break-all; line-height: 1.6;
-    }
+    .arrow { margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; }
+    code { display: block; margin-top: 28px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; font-size: 12px; color: #475569; text-align: left; word-break: break-all; line-height: 1.6; }
   </style>
 </head>
 <body>

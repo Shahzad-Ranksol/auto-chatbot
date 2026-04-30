@@ -1,6 +1,6 @@
 'use strict';
 
-const BASE = '/auto-chatbot';
+const BASE = '/chatbot-pro';
 if (localStorage.getItem('token')) window.location.replace(BASE + '/dashboard.html');
 
 function togglePw(inputId, btn) {

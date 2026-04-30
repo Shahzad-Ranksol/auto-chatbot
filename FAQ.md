@@ -6,7 +6,7 @@
 
 Set `BASE_URL` in your `.env` to match your public domain exactly — including any sub-path. For example:
 ```
-BASE_URL=https://yourdomain.com/auto-chatbot
+BASE_URL=https://yourdomain.com/chatbot-pro
 ```
 Make sure there is no trailing slash. Restart the server after changing `.env`.
 
@@ -15,7 +15,7 @@ Make sure there is no trailing slash. Restart the server after changing `.env`.
 **Q: Login fails with "Invalid email or password".**
 
 1. Confirm the database is running and the credentials in `.env` are correct
-2. Verify your admin account was created: `mysql -u root -p autochatbot -e "SELECT email, is_admin FROM users;"`
+2. Verify your admin account was created: `mysql -u root -p chatbot_pro -e "SELECT email, is_admin FROM users;"`
 3. If the table is empty, delete `installed.lock` and visit `/install` again
 
 ---
@@ -115,10 +115,10 @@ If the db is not ready, wait and run `docker compose up` again. If the error per
 
 **Q: I get a 404 on all routes on cPanel.**
 
-1. Confirm `BASE_URL=https://yourdomain.com/auto-chatbot` is set in `.env` (no trailing slash)
+1. Confirm `BASE_URL=https://yourdomain.com/chatbot-pro` is set in `.env` (no trailing slash)
 2. Verify the Node.js app startup file is `server/index.js`
 3. Ensure the app is started (green status in cPanel Node.js manager)
-4. The app automatically handles the `/auto-chatbot` prefix — do not configure URL rewriting for this path
+4. The app automatically handles the `/chatbot-pro` prefix — do not configure URL rewriting for this path
 
 ---
 
@@ -126,9 +126,9 @@ If the db is not ready, wait and run `docker compose up` again. If the error per
 
 Check that the `uploads/` and `public/uploads/icons/` directories exist and are writable:
 ```bash
-mkdir -p ~/auto-chatbot/uploads
-mkdir -p ~/auto-chatbot/public/uploads/icons
-chmod 755 ~/auto-chatbot/uploads ~/auto-chatbot/public/uploads/icons
+mkdir -p ~/chatbot-pro/uploads
+mkdir -p ~/chatbot-pro/public/uploads/icons
+chmod 755 ~/chatbot-pro/uploads ~/chatbot-pro/public/uploads/icons
 ```
 
 ---
@@ -138,12 +138,12 @@ chmod 755 ~/auto-chatbot/uploads ~/auto-chatbot/public/uploads/icons
 **Q: How do I back up my data?**
 
 ```bash
-mysqldump -u root -p autochatbot > autochatbot_backup_$(date +%Y%m%d).sql
+mysqldump -u root -p chatbot_pro > chatbot_pro_backup_$(date +%Y%m%d).sql
 ```
 
 To restore:
 ```bash
-mysql -u root -p autochatbot < autochatbot_backup_20260101.sql
+mysql -u root -p chatbot_pro < chatbot_pro_backup_20260101.sql
 ```
 
 **Uploaded icon files** are stored in `public/uploads/icons/` — back up this folder separately.

@@ -1,6 +1,6 @@
 'use strict';
 
-const BASE = '/auto-chatbot';
+const BASE = '/chatbot-pro';
 const token = localStorage.getItem('token');
 if (!token) window.location.replace(BASE + '/login.html');
 

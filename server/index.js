@@ -16,21 +16,6 @@ function log(msg) {
 process.on('uncaughtException', (err) => { log('UNCAUGHT EXCEPTION: ' + err.stack); process.exit(1); });
 process.on('unhandledRejection', (reason) => { log('UNHANDLED REJECTION: ' + reason); });
 
-// ── DB auto-init ───────────────────────────────────────────────────────────────
-async function initDB() {
-  const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-  const statements = sql
-    .split(';')
-    .map(s => s.trim())
-    // Skip CREATE DATABASE and USE — buyer creates the DB manually on shared hosting
-    .filter(s => s.length > 0 && !s.startsWith('--') && !s.toUpperCase().startsWith('CREATE DATABASE') && !s.toUpperCase().startsWith('USE '));
-  const conn = await require('./db').getConnection();
-  try {
-    for (const stmt of statements) await conn.query(stmt);
-  } finally {
-    conn.release();
-  }
-}
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 const iconDir = path.join(__dirname, '../public/uploads/icons');
@@ -44,10 +29,10 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { poli
 app.use(cors());
 app.use(express.json());
 
-// Strip /auto-chatbot prefix added by cPanel's reverse proxy
+// Strip /chatbot-pro prefix added by cPanel's reverse proxy
 app.use((req, res, next) => {
-  if (req.url.startsWith('/auto-chatbot')) {
-    req.url = req.url.slice('/auto-chatbot'.length) || '/';
+  if (req.url.startsWith('/chatbot-pro')) {
+    req.url = req.url.slice('/chatbot-pro'.length) || '/';
   }
   next();
 });
@@ -65,20 +50,20 @@ app.use(express.static(path.join(__dirname, '../public'), { extensions: ['html']
 
 // Returns the configured public base URL — used by the dashboard to build embed scripts
 app.get('/api/config', (req, res) => {
-  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/auto-chatbot`;
+  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/chatbot-pro`;
   res.json({ baseUrl });
 });
 
 // Live preview page for testing a chatbot widget
 app.get('/widget-test/:id', (req, res) => {
   const id = req.params.id;
-  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/auto-chatbot`;
+  const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}/chatbot-pro`;
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Widget Test — AutoChatbot</title>
+  <title>Widget Test — ChatBot Pro</title>
   <style>
     *{box-sizing:border-box}
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;display:flex;flex-direction:column;min-height:100vh}
@@ -96,7 +81,7 @@ app.get('/widget-test/:id', (req, res) => {
 </head>
 <body>
   <div class="bar">
-    🤖 AutoChatbot — Widget Test
+    🤖 ChatBot Pro — Widget Test
     <a href="${baseUrl}/dashboard.html">← Back to Dashboard</a>
   </div>
   <div class="content">
@@ -127,14 +112,6 @@ app.use('/api/admin',    apiLimiter, require('./routes/admin'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', version: '2.0.0' }));
 
-initDB()
-  .then(() => {
-    app.listen(PORT, () => log(`Server running on http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    log('DB init failed: ' + err.message);
-    // Start anyway — DB may already be initialised
-    app.listen(PORT, () => log(`Server running on http://localhost:${PORT} (DB init skipped)`));
-  });
+app.listen(PORT, () => log(`Server running on http://localhost:${PORT}`));
 
 module.exports = app;

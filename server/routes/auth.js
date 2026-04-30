@@ -14,14 +14,11 @@ router.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(password, 10);
-    const [result] = await db.execute(
-      'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
-      [name || '', email.toLowerCase().trim(), hash]
-    );
-    const user = { id: result.insertId, name: name || '', email: email.toLowerCase().trim() };
+    const { id } = db.users.create({ name, email, password_hash: hash });
+    const user = { id, name: name || '', email: email.toLowerCase().trim() };
     res.status(201).json({ token: sign(user), user });
   } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'Email already registered' });
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'Email already registered' });
     console.error(err);
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -32,13 +29,13 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
 
   try {
-    const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
-    if (!rows.length) return res.status(401).json({ error: 'Invalid email or password' });
+    const row = db.users.findByEmail(email);
+    if (!row) return res.status(401).json({ error: 'Invalid email or password' });
 
-    const valid = await bcrypt.compare(password, rows[0].password_hash);
+    const valid = await bcrypt.compare(password, row.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
-    const { password_hash, ...user } = rows[0];
+    const { password_hash, ...user } = row;
     res.json({ token: sign(user), user });
   } catch (err) {
     console.error(err);

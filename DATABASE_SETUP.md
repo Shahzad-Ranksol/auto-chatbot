@@ -1,6 +1,6 @@
 # Database Setup Guide
 
-AutoChatbot requires one empty MySQL database. The tables are created **automatically** by the installer — you never need to run SQL manually.
+ChatBot Pro requires one empty MySQL database. The tables are created **automatically** by the installer — you never need to run SQL manually.
 
 ---
 
@@ -8,19 +8,19 @@ AutoChatbot requires one empty MySQL database. The tables are created **automati
 
 1. Log into **cPanel**
 2. Go to **MySQL Databases**
-3. Under **Create New Database** — enter a name (e.g. `autochatbot`) → click **Create Database**
+3. Under **Create New Database** — enter a name (e.g. `chatbot_pro`) → click **Create Database**
 4. Under **MySQL Users** → **Add New User** — enter a username and strong password → click **Create User**
 5. Under **Add User to Database** — select the user and database you just created → click **Add**
 6. On the privileges screen → check **ALL PRIVILEGES** → click **Make Changes**
 7. Note the full database name and username — on cPanel they are prefixed with your account name:
-   - Database: `youraccount_autochatbot`
+   - Database: `youraccount_chatbot_pro`
    - Username: `youraccount_dbuser`
 8. Add these to your `.env` file:
    ```
    DB_HOST=localhost
    DB_USER=youraccount_dbuser
    DB_PASSWORD=your-password
-   DB_NAME=youraccount_autochatbot
+   DB_NAME=youraccount_chatbot_pro
    ```
 
 ---
@@ -32,9 +32,9 @@ AutoChatbot requires one empty MySQL database. The tables are created **automati
 mysql -u root -p
 
 # Run these commands:
-CREATE DATABASE autochatbot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE chatbot_pro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'chatbot'@'localhost' IDENTIFIED BY 'your-strong-password';
-GRANT ALL PRIVILEGES ON autochatbot.* TO 'chatbot'@'localhost';
+GRANT ALL PRIVILEGES ON chatbot_pro.* TO 'chatbot'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -44,7 +44,7 @@ Add to `.env`:
 DB_HOST=localhost
 DB_USER=chatbot
 DB_PASSWORD=your-strong-password
-DB_NAME=autochatbot
+DB_NAME=chatbot_pro
 ```
 
 ---
@@ -55,14 +55,14 @@ DB_NAME=autochatbot
 2. Connect to your local MySQL server
 3. Run:
    ```sql
-   CREATE DATABASE autochatbot CHARACTER SET utf8mb4;
+   CREATE DATABASE chatbot_pro CHARACTER SET utf8mb4;
    ```
 4. Add to `.env`:
    ```
    DB_HOST=localhost
    DB_USER=root
    DB_PASSWORD=your-mysql-root-password
-   DB_NAME=autochatbot
+   DB_NAME=chatbot_pro
    ```
 
 ---

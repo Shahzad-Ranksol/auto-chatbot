@@ -2,7 +2,7 @@
 
 ## Logging In
 
-Navigate to `/login.html` (or `/auto-chatbot/login.html` on cPanel deployments). Enter the email and password you created during setup.
+Navigate to `/login.html` (or `/chatbot-pro/login.html` on cPanel deployments). Enter the email and password you created during setup.
 
 ---
 

@@ -6,28 +6,13 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 
 const LOCK_FILE = path.join(__dirname, '../../installed.lock');
-const SCHEMA = path.join(__dirname, '../schema.sql');
-
-async function createTables() {
-  const sql = fs.readFileSync(SCHEMA, 'utf8');
-  const statements = sql
-    .split(';')
-    .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--') && !s.toUpperCase().startsWith('CREATE DATABASE') && !s.toUpperCase().startsWith('USE '));
-  const conn = await db.getConnection();
-  try {
-    for (const stmt of statements) await conn.query(stmt);
-  } finally {
-    conn.release();
-  }
-}
 
 const PAGE = (opts) => `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>${opts.title} — AutoChatbot</title>
+  <title>${opts.title} — ChatBot Pro</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -46,6 +31,11 @@ const PAGE = (opts) => `<!DOCTYPE html>
     .msg.success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
     .done-icon{font-size:56px;text-align:center;margin-bottom:16px}
     .btn-link{display:inline-block;margin-top:24px;background:#2563eb;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px}
+    .cred-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:24px 0 8px;text-align:left}
+    .cred-box p{font-size:12px;color:#64748b;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .cred-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .cred-label{font-size:13px;color:#64748b}
+    .cred-value{font-size:13px;font-weight:700;color:#1e293b;background:#e2e8f0;padding:3px 10px;border-radius:6px;font-family:monospace;word-break:break-all}
   </style>
 </head>
 <body>
@@ -58,7 +48,7 @@ const INSTALL_FORM = PAGE({
   title: 'Setup',
   body: `
     <div class="logo">🤖</div>
-    <h1>AutoChatbot Setup</h1>
+    <h1>ChatBot Pro Setup</h1>
     <p class="sub">Create your admin account to get started.</p>
     <form id="form">
       <label for="name">Full Name</label>
@@ -77,20 +67,21 @@ const INSTALL_FORM = PAGE({
       const msg = document.getElementById('msg');
       btn.disabled = true; btn.textContent = 'Setting up…';
       msg.style.display = 'none';
+      const email = document.getElementById('email').value;
       try {
         const res = await fetch('/install', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
+            email,
             password: document.getElementById('password').value
           })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Setup failed');
         msg.className = 'msg success'; msg.textContent = '✅ ' + data.message; msg.style.display = 'block';
-        setTimeout(() => { window.location.href = data.loginUrl || '/login.html'; }, 1500);
+        setTimeout(() => { window.location.href = '/install/success?email=' + encodeURIComponent(email); }, 1200);
       } catch(err) {
         msg.className = 'msg error'; msg.textContent = '❌ ' + err.message; msg.style.display = 'block';
         btn.disabled = false; btn.textContent = 'Create Admin Account';
@@ -105,89 +96,67 @@ function alreadyInstalledPage(loginUrl) {
     body: `
       <div class="done-icon">✅</div>
       <h1>Already Installed</h1>
-      <p class="sub" style="margin-bottom:0">AutoChatbot is already set up.<br/>Use the link below to log in.</p>
+      <p class="sub" style="margin-bottom:0">ChatBot Pro is already set up.<br/>Use the link below to log in.</p>
       <div style="text-align:center"><a class="btn-link" href="${loginUrl}">Go to Login</a></div>`
   });
 }
 
-function dbErrorPage(err) {
+function successPage(email, loginUrl) {
   return PAGE({
-    title: 'Setup Error',
+    title: 'Setup Complete',
     body: `
-      <div class="done-icon">⚠️</div>
-      <h1>Database Connection Error</h1>
-      <p class="sub">Could not connect to the database. Check your <code>.env</code> credentials and try again.</p>
-      <p style="font-size:12px;color:#94a3b8;margin-top:8px;word-break:break-all">${err}</p>
-      <div style="margin-top:24px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:left">
-        <p style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px">Required <code>.env</code> variables:</p>
-        <pre style="font-size:12px;color:#475569;margin:0;line-height:1.8">DB_HOST=localhost
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name</pre>
-        <p style="font-size:12px;color:#64748b;margin-top:10px">On cPanel, database and username are prefixed with your account name, e.g. <code>myaccount_autochatbot</code>. See <strong>DATABASE_SETUP.md</strong> for full instructions.</p>
-      </div>`
+      <div class="done-icon">🎉</div>
+      <h1>Setup Complete!</h1>
+      <p class="sub">Your admin account is ready. Save these credentials now.</p>
+      <div class="cred-box">
+        <p>Your Login Credentials</p>
+        <div class="cred-row">
+          <span class="cred-label">Email</span>
+          <span class="cred-value">${email}</span>
+        </div>
+        <div class="cred-row">
+          <span class="cred-label">Password</span>
+          <span class="cred-value">the password you entered</span>
+        </div>
+      </div>
+      <div style="text-align:center"><a class="btn-link" href="${loginUrl}">Go to Login →</a></div>`
   });
 }
 
-// Detect the login URL — works with or without the /auto-chatbot prefix
 function loginUrl(req) {
   const base = process.env.BASE_URL || '';
   return base ? `${base}/login.html` : '/login.html';
 }
 
-router.get('/', async (req, res) => {
-  if (fs.existsSync(LOCK_FILE)) {
-    return res.send(alreadyInstalledPage(loginUrl(req)));
-  }
-  try {
-    const [[{ cnt }]] = await db.execute('SELECT COUNT(*) as cnt FROM users');
-    if (cnt > 0) return res.send(alreadyInstalledPage(loginUrl(req)));
-  } catch (err) {
-    return res.status(500).send(dbErrorPage(err.message));
-  }
+router.get('/', (req, res) => {
+  if (fs.existsSync(LOCK_FILE)) return res.send(alreadyInstalledPage(loginUrl(req)));
+  if (db.users.count() > 0)    return res.send(alreadyInstalledPage(loginUrl(req)));
   res.send(INSTALL_FORM);
 });
 
 router.post('/', async (req, res) => {
-  if (fs.existsSync(LOCK_FILE)) {
-    return res.status(400).json({ error: 'Already installed' });
-  }
+  if (fs.existsSync(LOCK_FILE)) return res.status(400).json({ error: 'Already installed' });
 
   const { name, email, password } = req.body || {};
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Name, email and password are required' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: 'Invalid email address' });
-  }
+  if (!name || !email || !password)      return res.status(400).json({ error: 'Name, email and password are required' });
+  if (password.length < 6)               return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email address' });
 
   try {
-    // Create tables if they don't exist yet (buyer only needs an empty DB)
-    await createTables();
-
     const hash = await bcrypt.hash(password, 10);
-    await db.execute(
-      'INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 1)',
-      [name.trim(), email.trim().toLowerCase(), hash]
-    );
+    db.users.create({ name: name.trim(), email: email.trim().toLowerCase(), password_hash: hash, is_admin: 1 });
     fs.writeFileSync(LOCK_FILE, new Date().toISOString());
-    res.json({
-      success: true,
-      message: 'Admin account created. Redirecting to login…',
-      loginUrl: loginUrl(req)
-    });
+    res.json({ success: true, message: 'Admin account created. Redirecting…' });
   } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ error: 'An account with that email already exists' });
-    }
-    if (err.code === 'ER_ACCESS_DENIED_ERROR' || err.code === 'ECONNREFUSED' || err.code === 'ER_BAD_DB_ERROR') {
-      return res.status(500).json({ error: 'Database connection failed. Check your .env DB credentials and ensure the database exists.' });
-    }
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'An account with that email already exists' });
     res.status(500).json({ error: 'Setup failed: ' + err.message });
   }
+});
+
+// Success page — shows the admin their credentials after install
+router.get('/success', (req, res) => {
+  const email = req.query.email || '';
+  res.send(successPage(email, loginUrl(req)));
 });
 
 module.exports = router;

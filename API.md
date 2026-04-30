@@ -339,7 +339,7 @@ Returns the server's configured public base URL.
 
 **Response `200`**
 ```json
-{ "baseUrl": "https://yourdomain.com/auto-chatbot" }
+{ "baseUrl": "https://yourdomain.com/chatbot-pro" }
 ```
 
 ---

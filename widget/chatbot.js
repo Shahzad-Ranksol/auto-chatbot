@@ -180,7 +180,7 @@
           </svg>
         </button>
       </div>
-      <div id="cb-brand">Powered by AutoChatbot</div>
+      <div id="cb-brand">Powered by ChatBot Pro</div>
     </div>
     <button id="cb-btn" title="Chat with us"></button>
   `;

@@ -8,19 +8,12 @@ router.post('/', async (req, res) => {
   if (!chatbotId || !message) return res.status(400).json({ error: 'chatbotId and message are required' });
 
   try {
-    const [rows] = await db.execute(
-      `SELECT c.*, u.ai_provider, u.ai_key
-       FROM chatbots c
-       JOIN users u ON u.id = c.user_id
-       WHERE c.id = ?`,
-      [chatbotId]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Chatbot not found' });
+    const chatbot = db.chatbots.findByIdWithOwner(chatbotId);
+    if (!chatbot) return res.status(404).json({ error: 'Chatbot not found' });
 
-    const chatbot = rows[0];
-    const context = chatbot.knowledge_base || '';
+    const context  = chatbot.knowledge_base || '';
     const provider = chatbot.ai_provider;
-    const key = chatbot.ai_key;
+    const key      = chatbot.ai_key;
 
     let reply;
 
@@ -52,11 +45,7 @@ router.post('/', async (req, res) => {
       reply = smartEcho(message, context, chatbot.name);
     }
 
-    await db.execute(
-      'INSERT INTO messages (chatbot_id, user_message, bot_reply) VALUES (?, ?, ?)',
-      [chatbotId, message, reply]
-    );
-
+    db.messages.create({ chatbot_id: chatbotId, user_message: message, bot_reply: reply });
     res.json({ reply, chatbotId, timestamp: new Date().toISOString() });
   } catch (err) {
     console.error(err);

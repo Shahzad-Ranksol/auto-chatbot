@@ -2,9 +2,9 @@
 
 ## Envato Extended License
 
-This item (AutoChatbot) is licensed under the Envato Extended License.
+This item (ChatBot Pro) is licensed under the Envato Extended License.
 
-**Item:** AutoChatbot  
+**Item:** ChatBot Pro  
 **Author:** [Your Envato Username]  
 **Item URL:** [CodeCanyon Item URL]
 
