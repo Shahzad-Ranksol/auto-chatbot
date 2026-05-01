@@ -1,0 +1,15 @@
+---
+deployment:
+  tasks:
+    - export OLD=/home/nimbleleads/auto-chatbot
+    - export NEW=/home/nimbleleads/repositories/auto-chatbot
+    - /bin/mkdir -p $OLD/scripts $OLD/data
+    - /bin/cp $NEW/scripts/migrate-mysql-to-json.js $OLD/scripts/migrate-mysql-to-json.js
+    - cd $OLD && node scripts/migrate-mysql-to-json.js || echo "Migration skipped (db.json already exists)"
+    - /bin/cp -Rf $NEW/server $OLD/
+    - /bin/cp -Rf $NEW/public $OLD/
+    - /bin/cp -Rf $NEW/widget $OLD/
+    - /bin/cp -f $NEW/package.json $OLD/package.json
+    - /bin/cp -f $NEW/package-lock.json $OLD/package-lock.json
+    - /bin/cp -f $NEW/.env.example $OLD/.env.example
+    - cd $OLD && npm install --production
